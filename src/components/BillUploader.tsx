@@ -3,8 +3,8 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useBillStore } from '@/store/billStore';
 import { ExtractedItem, OcrResponse, OcrItem } from '@/types';
-// Make sure EditableItemsTable.tsx exists in the same folder, or update the path if it's elsewhere
 import EditableItemsTable from './EditableItemsTable';
+import ErrorModal from './ErrorModal';
 
 interface BillUploaderProps {
   onSuccess?: () => void;
@@ -18,12 +18,18 @@ export default function BillUploader({ onSuccess, onError }: BillUploaderProps) 
   const [loading, setLoading] = useState(false);
   const [ocrResults, setOcrResults] = useState<OcrResponse | null>(null);
   const [editableItems, setEditableItems] = useState<ExtractedItem[]>([]);
+  const [error, setError] = useState<string>('');
+  const [showErrorModal, setShowErrorModal] = useState(false);
+  const [errorDetails, setErrorDetails] = useState<{
+    title: string;
+    message: string;
+    errorType?: string;
+  }>({ title: '', message: '' });
 
   // Debug logging for state changes
   useEffect(() => {
     console.log('State updated - ocrResults:', !!ocrResults, 'editableItems.length:', editableItems.length);
   }, [ocrResults, editableItems]);
-  const [error, setError] = useState<string>('');
   const fileInputRef = useRef<HTMLInputElement>(null);
   
   const { setItems } = useBillStore();
@@ -117,21 +123,33 @@ export default function BillUploader({ onSuccess, onError }: BillUploaderProps) 
         console.log('State after setting - ocrResults should exist, editableItems length:', extractedItems.length);
         
         // Don't call onSuccess here - wait for user to confirm items
-        
-        // Show notice about which method was used
-        if (result.data.mode === 'mock' || result.data.mode === 'mock-fallback') {
-          console.info('Using mock data. Configure GOOGLE_AI_API_KEY in .env.local to use Gemini Vision API.');
-        } else {
-          console.info('Successfully processed image with Gemini Vision API.');
-        }
+        console.info('Successfully processed image with Gemini Vision API.');
       } else {
-        setError(result.error || 'Failed to process image');
-        onError?.(result.error || 'Failed to process image');
+        // Handle different error types
+        const errorType = result.errorType;
+        let title = 'Processing Error';
+        let message = result.error || 'Failed to process image';
+
+        if (errorType === 'MISSING_API_KEY') {
+          title = 'API Key Missing';
+          message = 'Google AI API key is not configured. The app requires a valid API key to process bill images.';
+        } else if (errorType === 'GEMINI_PROCESSING_ERROR') {
+          title = 'AI Processing Failed';
+          message = 'Failed to process the image with Gemini AI. Please try again with a clearer image or use manual entry.';
+        }
+
+        setErrorDetails({ title, message, errorType });
+        setShowErrorModal(true);
+        setError(message);
+        onError?.(message);
       }
     } catch {
-      const errorMessage = 'Network error occurred while processing image';
-      setError(errorMessage);
-      onError?.(errorMessage);
+      const title = 'Network Error';
+      const message = 'Network error occurred while processing image. Please check your connection and try again.';
+      setErrorDetails({ title, message, errorType: 'NETWORK_ERROR' });
+      setShowErrorModal(true);
+      setError(message);
+      onError?.(message);
     } finally {
       setLoading(false);
     }
@@ -142,6 +160,8 @@ export default function BillUploader({ onSuccess, onError }: BillUploaderProps) 
     setOcrResults(null);
     setEditableItems([]);
     setError('');
+    setShowErrorModal(false);
+    setErrorDetails({ title: '', message: '' });
     if (fileInputRef.current) {
       fileInputRef.current.value = '';
     }
@@ -413,29 +433,16 @@ export default function BillUploader({ onSuccess, onError }: BillUploaderProps) 
             className="shadow-sm"
           />
 
-          {ocrResults.mode === 'mock' || ocrResults.mode === 'mock-fallback' ? (
-            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-              <div className="flex items-center">
-                <svg className="w-5 h-5 text-blue-600 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-                <p className="text-sm text-blue-800">
-                  <strong>Demo Mode:</strong> Using mock data. Configure GOOGLE_AI_API_KEY in .env.local to use Gemini Vision API.
-                </p>
-              </div>
+          <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+            <div className="flex items-center">
+              <svg className="w-5 h-5 text-green-600 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+              <p className="text-sm text-green-800">
+                <strong>Success:</strong> {ocrResults.mode === 'manual' ? 'Manual bill created successfully.' : 'Successfully processed using Google\'s Gemini Vision API.'}
+              </p>
             </div>
-          ) : (
-            <div className="bg-green-50 border border-green-200 rounded-lg p-4">
-              <div className="flex items-center">
-                <svg className="w-5 h-5 text-green-600 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-                <p className="text-sm text-green-800">
-                  <strong>Gemini Vision:</strong> Successfully processed using Google&apos;s Gemini Vision API.
-                </p>
-              </div>
-            </div>
-          )}
+          </div>
 
           <div className="flex justify-center">
             <button
@@ -512,6 +519,15 @@ export default function BillUploader({ onSuccess, onError }: BillUploaderProps) 
           )}
         </div>
       )}
+
+      {/* Error Modal */}
+      <ErrorModal
+        isOpen={showErrorModal}
+        onClose={() => setShowErrorModal(false)}
+        title={errorDetails.title}
+        message={errorDetails.message}
+        errorType={errorDetails.errorType}
+      />
     </div>
   );
 }

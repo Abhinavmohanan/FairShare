@@ -37,32 +37,14 @@ export async function POST(request: NextRequest) {
     const apiKey = process.env.GOOGLE_AI_API_KEY;
     
     if (!apiKey) {
-      console.warn('Gemini API key not configured, using mock data');
-      // Fallback to mock data
-      const items = [
-        { item_name: "Margherita Pizza", quantity: 2, unit_price: 12.99 },
-        { item_name: "Caesar Salad", quantity: 1, unit_price: 8.50 },
-        { item_name: "Garlic Bread", quantity: 3, unit_price: 4.25 },
-        { item_name: "Coke", quantity: 2, unit_price: 2.50 },
-        { item_name: "Tiramisu", quantity: 1, unit_price: 6.75 }
-      ];
-
-      const totalAmount = items.reduce((total, item) => total + (item.quantity * item.unit_price), 0);
-
-      return NextResponse.json({
-        success: true,
-        data: {
-          items: items.map(item => ({
-            description: item.item_name,
-            quantity: item.quantity,
-            unitPrice: item.unit_price
-          })),
-          totalAmount,
-          fileName: file.name,
-          processedAt: new Date().toISOString(),
-          mode: 'mock'
-        }
-      });
+      return NextResponse.json(
+        { 
+          success: false, 
+          error: 'Google AI API key is not configured. Please add GOOGLE_AI_API_KEY to your environment variables.',
+          errorType: 'MISSING_API_KEY'
+        },
+        { status: 500 }
+      );
     }
 
     try {
@@ -222,33 +204,16 @@ IMPORTANT RULES:
       return NextResponse.json(response_data);
 
     } catch (error) {
-      console.error('Gemini processing failed, using mock data:', error);
+      console.error('Gemini processing failed:', error);
       
-      // Fallback to mock data
-      const items = [
-        { item_name: "Chicken Curry", quantity: 1, unit_price: 15.99 },
-        { item_name: "Basmati Rice", quantity: 2, unit_price: 4.50 },
-        { item_name: "Naan Bread", quantity: 3, unit_price: 3.25 },
-        { item_name: "Mango Lassi", quantity: 2, unit_price: 4.75 },
-        { item_name: "Gulab Jamun", quantity: 1, unit_price: 5.99 }
-      ];
-
-      const totalAmount = items.reduce((total, item) => total + (item.quantity * item.unit_price), 0);
-
-      return NextResponse.json({
-        success: true,
-        data: {
-          items: items.map(item => ({
-            description: item.item_name,
-            quantity: item.quantity,
-            unitPrice: item.unit_price
-          })),
-          totalAmount,
-          fileName: file.name,
-          processedAt: new Date().toISOString(),
-          mode: 'mock-fallback'
-        }
-      });
+      return NextResponse.json(
+        { 
+          success: false, 
+          error: error instanceof Error ? error.message : 'Failed to process image with Gemini AI',
+          errorType: 'GEMINI_PROCESSING_ERROR'
+        },
+        { status: 500 }
+      );
     }
 
   } catch (error) {

@@ -15,7 +15,18 @@ export interface OcrResponse {
   totalAmount: number;
   fileName: string;
   processedAt: string;
-  mode?: 'mock' | 'gemini-vision' | 'mock-fallback' | 'manual';
+  mode?: 'gemini-vision' | 'manual';
+}
+
+export interface ApiErrorResponse {
+  success: false;
+  error: string;
+  errorType?: 'MISSING_API_KEY' | 'GEMINI_PROCESSING_ERROR' | 'NETWORK_ERROR' | 'VALIDATION_ERROR';
+}
+
+export interface ApiSuccessResponse {
+  success: true;
+  data: OcrResponse;
 }
 
 export interface Person {
