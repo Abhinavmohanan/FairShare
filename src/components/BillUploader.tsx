@@ -293,7 +293,7 @@ export default function BillUploader({ onSuccess, onError }: BillUploaderProps) 
         <input
           ref={fileInputRef}
           type="file"
-          className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+          className="hidden"
           accept="image/*"
           onChange={handleFileSelect}
           multiple={false}
@@ -359,31 +359,6 @@ export default function BillUploader({ onSuccess, onError }: BillUploaderProps) 
           </div>
         )}
       </div>
-
-      {/* iOS-friendly explicit button */}
-      {!selectedFile && !ocrResults && mode === 'upload' && (
-        <div className="text-center">
-          <button
-            type="button"
-            onClick={(e) => {
-              e.preventDefault();
-              console.log('Explicit button clicked');
-              fileInputRef.current?.click();
-            }}
-            className="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors duration-200"
-          >
-            <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2H5a2 2 0 00-2-2z" />
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 5v4" />
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 9l-3-3" />
-            </svg>
-            Select Photo from Device
-          </button>
-          <p className="text-sm text-gray-500 mt-2">
-            Alternative way to select files on mobile devices
-          </p>
-        </div>
-      )}
 
       {/* Error Message */}
       {error && (
