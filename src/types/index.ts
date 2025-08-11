@@ -15,7 +15,7 @@ export interface OcrResponse {
   totalAmount: number;
   fileName: string;
   processedAt: string;
-  mode?: 'mock' | 'gemini-vision' | 'mock-fallback';
+  mode?: 'mock' | 'gemini-vision' | 'mock-fallback' | 'manual';
 }
 
 export interface Person {
