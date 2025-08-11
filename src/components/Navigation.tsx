@@ -18,8 +18,8 @@ export default function Navigation() {
                 </svg>
               </div>
               {/* Show full title on larger screens, abbreviated on mobile */}
-              <span className="text-xl font-bold text-gray-900 hidden sm:block">Smart Bill Splitter</span>
-              <span className="text-xl font-bold text-gray-900 sm:hidden">Bill Split</span>
+              <span className="text-xl font-bold text-gray-900 hidden sm:block">FairShare</span>
+              <span className="text-xl font-bold text-gray-900 sm:hidden">FairShare</span>
             </Link>
           </div>
           

@@ -14,7 +14,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Smart Bill Splitter",
+  title: "FairShare",
   description: "Split restaurant bills easily with OCR and smart calculation",
 };
 

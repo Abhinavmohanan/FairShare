@@ -1,4 +1,4 @@
-# Smart Bill Splitter
+# FairShare
 
 A Next.js 14 application that uses OCR to extract items from restaurant bills and splits them fairly among multiple people.
 

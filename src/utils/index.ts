@@ -57,7 +57,7 @@ export function formatCurrency(amount: number): string {
 }
 
 export function generateWhatsAppMessage(summaries: PersonSummary[]): string {
-  let message = "🧾 *Bill Split Summary*\n\n";
+  let message = "🧾 *FairShare - Bill Split Summary*\n\n";
   
   summaries.forEach(summary => {
     message += `👤 *${summary.person.name}*\n`;
