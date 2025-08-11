@@ -31,7 +31,7 @@ export default function EditableItemsTable({ items, onChange, className = '' }: 
     setEditingCell(null);
   };
 
-  const handleKeyDown = (e: React.KeyboardEvent, _rowIndex: number, _field: keyof ExtractedItem) => {
+  const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter') {
       setEditingCell(null);
     } else if (e.key === 'Escape') {
@@ -98,7 +98,7 @@ export default function EditableItemsTable({ items, onChange, className = '' }: 
                       value={item.item_name}
                       onChange={(e) => handleCellChange(index, 'item_name', e.target.value)}
                       onBlur={handleCellBlur}
-                      onKeyDown={(e) => handleKeyDown(e, index, 'item_name')}
+                      onKeyDown={handleKeyDown}
                       className="w-full px-2 py-1 border border-blue-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 bg-white"
                       autoFocus
                     />
@@ -119,7 +119,7 @@ export default function EditableItemsTable({ items, onChange, className = '' }: 
                       value={item.quantity}
                       onChange={(e) => handleCellChange(index, 'quantity', e.target.value)}
                       onBlur={handleCellBlur}
-                      onKeyDown={(e) => handleKeyDown(e, index, 'quantity')}
+                      onKeyDown={handleKeyDown}
                       className="w-full px-2 py-1 border border-blue-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 bg-white"
                       autoFocus
                     />
@@ -140,7 +140,7 @@ export default function EditableItemsTable({ items, onChange, className = '' }: 
                       value={item.unit_price}
                       onChange={(e) => handleCellChange(index, 'unit_price', e.target.value)}
                       onBlur={handleCellBlur}
-                      onKeyDown={(e) => handleKeyDown(e, index, 'unit_price')}
+                      onKeyDown={handleKeyDown}
                       className="w-full px-2 py-1 border border-blue-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 bg-white"
                       autoFocus
                     />
@@ -210,7 +210,7 @@ export default function EditableItemsTable({ items, onChange, className = '' }: 
                       value={item.item_name}
                       onChange={(e) => handleCellChange(index, 'item_name', e.target.value)}
                       onBlur={handleCellBlur}
-                      onKeyDown={(e) => handleKeyDown(e, index, 'item_name')}
+                      onKeyDown={handleKeyDown}
                       className="w-full px-3 py-2 border border-blue-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 bg-white"
                       autoFocus
                     />
@@ -234,7 +234,7 @@ export default function EditableItemsTable({ items, onChange, className = '' }: 
                         value={item.quantity}
                         onChange={(e) => handleCellChange(index, 'quantity', e.target.value)}
                         onBlur={handleCellBlur}
-                        onKeyDown={(e) => handleKeyDown(e, index, 'quantity')}
+                        onKeyDown={handleKeyDown}
                         className="w-full px-3 py-2 border border-blue-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 bg-white"
                         autoFocus
                       />
@@ -257,7 +257,7 @@ export default function EditableItemsTable({ items, onChange, className = '' }: 
                         value={item.unit_price}
                         onChange={(e) => handleCellChange(index, 'unit_price', e.target.value)}
                         onBlur={handleCellBlur}
-                        onKeyDown={(e) => handleKeyDown(e, index, 'unit_price')}
+                        onKeyDown={handleKeyDown}
                         className="w-full px-3 py-2 border border-blue-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 bg-white"
                         autoFocus
                       />
