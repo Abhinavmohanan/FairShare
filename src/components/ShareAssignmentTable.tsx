@@ -45,35 +45,36 @@ export default function ShareAssignmentTable({ onComplete }: ShareAssignmentTabl
         </div>
       ) : (
         <>
-          {/* Shares Table */}
-          <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
-            <div className="overflow-x-auto">
-              <table className="w-full">
-                <thead className="bg-gray-50">
-                  <tr>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
-                      Item
-                    </th>
-                    <th className="px-4 py-3 text-center text-xs font-medium text-gray-700 uppercase tracking-wider">
-                      Qty
-                    </th>
-                    <th className="px-4 py-3 text-center text-xs font-medium text-gray-700 uppercase tracking-wider">
-                      Price
-                    </th>
-                    {people.map((person) => (
-                      <th
-                        key={person.id}
-                        className="px-4 py-3 text-center text-xs font-medium text-gray-700 uppercase tracking-wider"
-                      >
-                        {person.name}
+          {/* Desktop Table View */}
+          <div className="hidden lg:block">
+            <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
+              <div className="overflow-x-auto">
+                <table className="w-full">
+                  <thead className="bg-gray-50">
+                    <tr>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
+                        Item
                       </th>
-                    ))}
-                    <th className="px-4 py-3 text-center text-xs font-medium text-gray-700 uppercase tracking-wider">
-                      Unassigned
-                    </th>
-                  </tr>
-                </thead>
-                <tbody className="bg-white divide-y divide-gray-200">
+                      <th className="px-4 py-3 text-center text-xs font-medium text-gray-700 uppercase tracking-wider">
+                        Qty
+                      </th>
+                      <th className="px-4 py-3 text-center text-xs font-medium text-gray-700 uppercase tracking-wider">
+                        Price
+                      </th>
+                      {people.map((person) => (
+                        <th
+                          key={person.id}
+                          className="px-4 py-3 text-center text-xs font-medium text-gray-700 uppercase tracking-wider"
+                        >
+                          {person.name}
+                        </th>
+                      ))}
+                      <th className="px-4 py-3 text-center text-xs font-medium text-gray-700 uppercase tracking-wider">
+                        Unassigned
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody className="bg-white divide-y divide-gray-200">
                   {items.map((item, itemIndex) => {
                     const unassigned = getUnassignedQuantity(itemIndex);
                     const hasError = Math.abs(unassigned) > 0.01;
@@ -112,9 +113,65 @@ export default function ShareAssignmentTable({ onComplete }: ShareAssignmentTabl
                       </tr>
                     );
                   })}
-                </tbody>
-              </table>
+                  </tbody>
+                </table>
+              </div>
             </div>
+          </div>
+
+          {/* Mobile Card View */}
+          <div className="lg:hidden space-y-4">
+            {items.map((item, itemIndex) => {
+              const unassigned = getUnassignedQuantity(itemIndex);
+              const hasError = Math.abs(unassigned) > 0.01;
+              
+              return (
+                <div key={itemIndex} className="bg-white rounded-lg border border-gray-200 p-4">
+                  <div className="mb-4">
+                    <h4 className="font-semibold text-gray-900">{item.item_name}</h4>
+                    <div className="flex justify-between text-sm text-gray-600 mt-1">
+                      <span>Qty: {item.quantity}</span>
+                      <span>Price: ₹{item.unit_price.toFixed(2)}</span>
+                    </div>
+                  </div>
+                  
+                  <div className="space-y-3">
+                    {people.map((person, personIndex) => (
+                      <div key={person.id} className="flex items-center justify-between">
+                        <div className="flex items-center space-x-2">
+                          <div className="w-6 h-6 bg-blue-100 rounded-full flex items-center justify-center">
+                            <span className="text-blue-600 font-semibold text-xs">
+                              {person.name.charAt(0).toUpperCase()}
+                            </span>
+                          </div>
+                          <span className="text-sm font-medium text-gray-900">{person.name}</span>
+                        </div>
+                        <input
+                          type="number"
+                          step="0.01"
+                          min="0"
+                          max={item.quantity}
+                          value={shares[itemIndex]?.[personIndex] || 0}
+                          onChange={(e) => handleShareChange(itemIndex, personIndex, e.target.value)}
+                          className="w-20 px-2 py-1 text-center border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900 bg-white"
+                        />
+                      </div>
+                    ))}
+                    
+                    <div className={`flex justify-between items-center pt-2 border-t ${
+                      hasError ? 'border-red-200' : 'border-gray-200'
+                    }`}>
+                      <span className="text-sm font-medium text-gray-700">Unassigned:</span>
+                      <span className={`font-bold ${
+                        hasError ? 'text-red-600' : 'text-green-600'
+                      }`}>
+                        {unassigned.toFixed(2)}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
           </div>
 
           {/* Subtotals */}

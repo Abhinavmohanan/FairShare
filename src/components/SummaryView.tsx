@@ -249,7 +249,8 @@ export default function SummaryView({ onReset }: SummaryViewProps) {
 
       {/* Summary Table */}
       <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
-        <div className="overflow-x-auto">
+        {/* Desktop Table View */}
+        <div className="hidden lg:block overflow-x-auto">
           <table className="w-full">
             <thead className="bg-gray-50">
               <tr>
@@ -309,6 +310,56 @@ export default function SummaryView({ onReset }: SummaryViewProps) {
               </tr>
             </tfoot>
           </table>
+        </div>
+
+        {/* Mobile Card View */}
+        <div className="lg:hidden space-y-4 p-4">
+          {summaries.map((summary) => (
+            <div key={summary.person.id} className="bg-gray-50 rounded-lg p-4">
+              <div className="flex items-center mb-4">
+                <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center mr-3">
+                  <span className="text-blue-600 font-semibold text-lg">
+                    {summary.person.name.charAt(0).toUpperCase()}
+                  </span>
+                </div>
+                <h3 className="font-bold text-lg text-gray-900">{summary.person.name}</h3>
+              </div>
+              
+              <div className="space-y-3">
+                <div className="flex justify-between items-center">
+                  <span className="text-gray-600">Subtotal:</span>
+                  <span className="font-medium text-gray-900">{formatCurrency(summary.subtotal)}</span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-gray-600">Tax/Tip Share:</span>
+                  <span className="font-medium text-gray-600">{formatCurrency(summary.taxShare)}</span>
+                </div>
+                <div className="flex justify-between items-center pt-2 border-t border-gray-200">
+                  <span className="text-lg font-bold text-gray-900">Total:</span>
+                  <span className="text-xl font-bold text-green-600">{formatCurrency(summary.finalTotal)}</span>
+                </div>
+              </div>
+            </div>
+          ))}
+          
+          {/* Mobile Total Summary */}
+          <div className="bg-blue-50 rounded-lg p-4 border-2 border-blue-200">
+            <h3 className="font-bold text-lg text-blue-900 mb-3">Grand Total</h3>
+            <div className="space-y-2">
+              <div className="flex justify-between items-center">
+                <span className="text-blue-800">Subtotal:</span>
+                <span className="font-bold text-blue-900">{formatCurrency(totalSubtotal)}</span>
+              </div>
+              <div className="flex justify-between items-center">
+                <span className="text-blue-800">Tax/Tip:</span>
+                <span className="font-bold text-blue-900">{formatCurrency(taxAmount)}</span>
+              </div>
+              <div className="flex justify-between items-center pt-2 border-t border-blue-300">
+                <span className="text-xl font-bold text-blue-900">Final Total:</span>
+                <span className="text-2xl font-bold text-green-600">{formatCurrency(grandTotal)}</span>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
 

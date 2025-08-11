@@ -59,31 +59,33 @@ export default function EditableItemsTable({ items, onChange, className = '' }: 
 
   return (
     <div className={`bg-white rounded-lg border border-gray-200 overflow-hidden ${className}`}>
-      <div className="overflow-x-auto">
-        <table className="w-full">
-          <thead className="bg-gray-50">
-            <tr>
-              <th className="px-4 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
-                #
-              </th>
-              <th className="px-4 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
-                Item Name
-              </th>
-              <th className="px-4 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
-                Quantity
-              </th>
-              <th className="px-4 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
-                Unit Price
-              </th>
-              <th className="px-4 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
-                Total
-              </th>
-              <th className="px-4 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
-                Actions
-              </th>
-            </tr>
-          </thead>
-          <tbody className="bg-white divide-y divide-gray-200">
+      {/* Desktop Table View */}
+      <div className="hidden lg:block">
+        <div className="overflow-x-auto">
+          <table className="w-full">
+            <thead className="bg-gray-50">
+              <tr>
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
+                  #
+                </th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
+                  Item Name
+                </th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
+                  Quantity
+                </th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
+                  Unit Price
+                </th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
+                  Total
+                </th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
+                  Actions
+                </th>
+              </tr>
+            </thead>
+            <tbody className="bg-white divide-y divide-gray-200">
             {items.map((item, index) => (
               <tr key={index} className="hover:bg-gray-50">
                 <td className="px-4 py-3 text-gray-700 font-medium text-center">
@@ -167,19 +169,127 @@ export default function EditableItemsTable({ items, onChange, className = '' }: 
                 </td>
               </tr>
             ))}
-          </tbody>
-          <tfoot className="bg-gray-50">
-            <tr>
-              <td colSpan={4} className="px-4 py-3 text-right font-medium text-gray-900">
-                Total:
-              </td>
-              <td className="px-4 py-3 font-bold text-gray-900">
-                ₹{calculateTotal().toFixed(2)}
-              </td>
-              <td className="px-4 py-3"></td>
-            </tr>
-          </tfoot>
-        </table>
+            </tbody>
+            <tfoot className="bg-gray-50">
+              <tr>
+                <td colSpan={4} className="px-4 py-3 text-right font-medium text-gray-900">
+                  Total:
+                </td>
+                <td className="px-4 py-3 font-bold text-gray-900">
+                  ₹{calculateTotal().toFixed(2)}
+                </td>
+                <td className="px-4 py-3"></td>
+              </tr>
+            </tfoot>
+          </table>
+        </div>
+      </div>      {/* Mobile Card View */}
+      <div className="lg:hidden">
+        <div className="space-y-4 p-4">
+          {items.map((item, index) => (
+            <div key={index} className="bg-gray-50 rounded-lg p-4 space-y-3">
+              <div className="flex justify-between items-center">
+                <span className="text-sm font-medium text-gray-500">Item #{index + 1}</span>
+                <button
+                  onClick={() => removeItem(index)}
+                  className="text-red-600 hover:text-red-800 transition-colors duration-200"
+                  title="Remove item"
+                >
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                  </svg>
+                </button>
+              </div>
+              
+              <div className="space-y-3">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Item Name</label>
+                  {editingCell?.row === index && editingCell.field === 'item_name' ? (
+                    <input
+                      type="text"
+                      value={item.item_name}
+                      onChange={(e) => handleCellChange(index, 'item_name', e.target.value)}
+                      onBlur={handleCellBlur}
+                      onKeyDown={(e) => handleKeyDown(e, index, 'item_name')}
+                      className="w-full px-3 py-2 border border-blue-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 bg-white"
+                      autoFocus
+                    />
+                  ) : (
+                    <div
+                      onClick={() => handleCellClick(index, 'item_name')}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg cursor-pointer hover:bg-blue-50 text-gray-900 bg-white"
+                    >
+                      {item.item_name}
+                    </div>
+                  )}
+                </div>
+
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Quantity</label>
+                    {editingCell?.row === index && editingCell.field === 'quantity' ? (
+                      <input
+                        type="number"
+                        step="0.01"
+                        value={item.quantity}
+                        onChange={(e) => handleCellChange(index, 'quantity', e.target.value)}
+                        onBlur={handleCellBlur}
+                        onKeyDown={(e) => handleKeyDown(e, index, 'quantity')}
+                        className="w-full px-3 py-2 border border-blue-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 bg-white"
+                        autoFocus
+                      />
+                    ) : (
+                      <div
+                        onClick={() => handleCellClick(index, 'quantity')}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg cursor-pointer hover:bg-blue-50 text-gray-900 bg-white"
+                      >
+                        {item.quantity}
+                      </div>
+                    )}
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Unit Price</label>
+                    {editingCell?.row === index && editingCell.field === 'unit_price' ? (
+                      <input
+                        type="number"
+                        step="0.01"
+                        value={item.unit_price}
+                        onChange={(e) => handleCellChange(index, 'unit_price', e.target.value)}
+                        onBlur={handleCellBlur}
+                        onKeyDown={(e) => handleKeyDown(e, index, 'unit_price')}
+                        className="w-full px-3 py-2 border border-blue-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 bg-white"
+                        autoFocus
+                      />
+                    ) : (
+                      <div
+                        onClick={() => handleCellClick(index, 'unit_price')}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg cursor-pointer hover:bg-blue-50 text-gray-900 bg-white"
+                      >
+                        ₹{item.unit_price.toFixed(2)}
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                <div className="pt-2 border-t border-gray-200">
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm font-medium text-gray-700">Total:</span>
+                    <span className="text-lg font-bold text-gray-900">₹{(item.quantity * item.unit_price).toFixed(2)}</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          ))}
+          
+          {/* Mobile Total */}
+          <div className="bg-blue-50 rounded-lg p-4 border border-blue-200">
+            <div className="flex justify-between items-center">
+              <span className="text-lg font-bold text-gray-900">Grand Total:</span>
+              <span className="text-xl font-bold text-blue-600">₹{calculateTotal().toFixed(2)}</span>
+            </div>
+          </div>
+        </div>
       </div>
       
       <div className="px-4 py-3 bg-gray-50 border-t border-gray-200">
