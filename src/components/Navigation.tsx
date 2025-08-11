@@ -17,14 +17,16 @@ export default function Navigation() {
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
                 </svg>
               </div>
-              <span className="text-xl font-bold text-gray-900">Smart Bill Splitter</span>
+              {/* Show full title on larger screens, abbreviated on mobile */}
+              <span className="text-xl font-bold text-gray-900 hidden sm:block">Smart Bill Splitter</span>
+              <span className="text-xl font-bold text-gray-900 sm:hidden">Bill Split</span>
             </Link>
           </div>
           
-          <div className="flex items-center space-x-4">
+          <div className="flex items-center space-x-1 sm:space-x-4">
             <Link
               href="/"
-              className={`px-3 py-2 rounded-md text-sm font-medium transition-colors duration-200 ${
+              className={`px-2 sm:px-3 py-2 rounded-md text-xs sm:text-sm font-medium transition-colors duration-200 ${
                 pathname === '/' 
                   ? 'bg-blue-100 text-blue-700' 
                   : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
@@ -34,7 +36,7 @@ export default function Navigation() {
             </Link>
             <Link
               href="/assign"
-              className={`px-3 py-2 rounded-md text-sm font-medium transition-colors duration-200 ${
+              className={`px-2 sm:px-3 py-2 rounded-md text-xs sm:text-sm font-medium transition-colors duration-200 ${
                 pathname === '/assign' 
                   ? 'bg-blue-100 text-blue-700' 
                   : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
@@ -44,7 +46,7 @@ export default function Navigation() {
             </Link>
             <Link
               href="/summary"
-              className={`px-3 py-2 rounded-md text-sm font-medium transition-colors duration-200 ${
+              className={`px-2 sm:px-3 py-2 rounded-md text-xs sm:text-sm font-medium transition-colors duration-200 ${
                 pathname === '/summary' 
                   ? 'bg-blue-100 text-blue-700' 
                   : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'

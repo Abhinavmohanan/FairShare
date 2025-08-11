@@ -59,14 +59,17 @@ export default function BillUploader({ onSuccess, onError }: BillUploaderProps) 
   };
 
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    console.log('File input changed, files:', e.target.files);
     if (e.target.files && e.target.files[0]) {
       const file = e.target.files[0];
+      console.log('Selected file:', { name: file.name, size: file.size, type: file.type });
       if (validateFile(file)) {
         setSelectedFile(file);
         setError('');
         // Clear any previous results
         setOcrResults(null);
         setEditableItems([]);
+        console.log('File selected successfully');
       }
     }
   };
@@ -95,6 +98,7 @@ export default function BillUploader({ onSuccess, onError }: BillUploaderProps) 
     setOcrResults(null);
 
     try {
+      console.log('Creating FormData with file:', selectedFile);
       const formData = new FormData();
       formData.append('file', selectedFile);
 
@@ -102,10 +106,21 @@ export default function BillUploader({ onSuccess, onError }: BillUploaderProps) 
       
       const response = await fetch('/api/gemini', { 
         method: 'POST', 
-        body: formData 
+        body: formData,
+        // Add headers that work better with iOS
+        headers: {
+          // Don't set Content-Type, let browser set it with boundary for FormData
+        }
       });
 
+      console.log('Response status:', response.status);
+      
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
       const result = await response.json();
+      console.log('API response:', result);
 
       if (result.success) {
         console.log('Processing successful, result.data:', result.data);
@@ -143,7 +158,8 @@ export default function BillUploader({ onSuccess, onError }: BillUploaderProps) 
         setError(message);
         onError?.(message);
       }
-    } catch {
+    } catch (error) {
+      console.error('Processing error:', error);
       const title = 'Network Error';
       const message = 'Network error occurred while processing image. Please check your connection and try again.';
       setErrorDetails({ title, message, errorType: 'NETWORK_ERROR' });
@@ -205,10 +221,18 @@ export default function BillUploader({ onSuccess, onError }: BillUploaderProps) 
     return editableItems.reduce((total, item) => total + (item.quantity * item.unit_price), 0);
   };
 
-  const handleClick = () => {
+  const handleClick = (e: React.MouseEvent) => {
     // Don't allow file selection if already processing or if results are showing
     if (loading || ocrResults) return;
-    fileInputRef.current?.click();
+    
+    // Ensure the click comes from the user and not programmatically
+    if (e.isTrusted) {
+      console.log('Triggering file input click');
+      // Use a timeout to ensure iOS processes the click properly
+      setTimeout(() => {
+        fileInputRef.current?.click();
+      }, 0);
+    }
   };
 
   return (
@@ -270,8 +294,10 @@ export default function BillUploader({ onSuccess, onError }: BillUploaderProps) 
           ref={fileInputRef}
           type="file"
           className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-          accept="image/jpeg,image/jpg,image/png"
+          accept="image/jpeg,image/jpg,image/png,image/*"
+          capture="environment"
           onChange={handleFileSelect}
+          multiple={false}
         />
         
         {!selectedFile ? (
@@ -334,6 +360,31 @@ export default function BillUploader({ onSuccess, onError }: BillUploaderProps) 
           </div>
         )}
       </div>
+
+      {/* iOS-friendly explicit button */}
+      {!selectedFile && !ocrResults && mode === 'upload' && (
+        <div className="text-center">
+          <button
+            type="button"
+            onClick={(e) => {
+              e.preventDefault();
+              console.log('Explicit button clicked');
+              fileInputRef.current?.click();
+            }}
+            className="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors duration-200"
+          >
+            <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2H5a2 2 0 00-2-2z" />
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 5v4" />
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 9l-3-3" />
+            </svg>
+            Select Photo from Device
+          </button>
+          <p className="text-sm text-gray-500 mt-2">
+            Alternative way to select files on mobile devices
+          </p>
+        </div>
+      )}
 
       {/* Error Message */}
       {error && (
