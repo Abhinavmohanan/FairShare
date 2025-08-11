@@ -180,7 +180,7 @@ IMPORTANT RULES:
       const items: ExtractedItem[] = JSON.parse(jsonMatch[0]);
       
       // Validate and filter items
-      const validItems = items.filter((item: any) => 
+      const validItems = items.filter((item: ExtractedItem) => 
         item.item_name && 
         typeof item.quantity === 'number' && 
         typeof item.unit_price === 'number' &&

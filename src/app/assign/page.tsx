@@ -9,7 +9,7 @@ import { useBillStore } from '@/store/billStore';
 export default function AssignPage() {
   const router = useRouter();
   const [step, setStep] = useState<'people' | 'shares'>('people');
-  const { items, people } = useBillStore();
+  const { items } = useBillStore();
 
   // Redirect if no items
   useEffect(() => {

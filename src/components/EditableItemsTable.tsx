@@ -31,7 +31,7 @@ export default function EditableItemsTable({ items, onChange, className = '' }: 
     setEditingCell(null);
   };
 
-  const handleKeyDown = (e: React.KeyboardEvent, rowIndex: number, field: keyof ExtractedItem) => {
+  const handleKeyDown = (e: React.KeyboardEvent, _rowIndex: number, _field: keyof ExtractedItem) => {
     if (e.key === 'Enter') {
       setEditingCell(null);
     } else if (e.key === 'Escape') {

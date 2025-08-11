@@ -242,7 +242,7 @@ export default function SummaryView({ onReset }: SummaryViewProps) {
             />
           </div>
           <p className="text-sm text-gray-500 max-w-md">
-            This will be split proportionally based on each person's subtotal
+            This will be split proportionally based on each person&apos;s subtotal
           </p>
         </div>
       </div>

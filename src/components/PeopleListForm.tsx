@@ -41,7 +41,7 @@ export default function PeopleListForm({ onComplete }: PeopleListFormProps) {
   return (
     <div className="space-y-6">
       <div>
-        <h2 className="text-2xl font-bold text-gray-900 mb-2">Who's Sharing the Bill?</h2>
+        <h2 className="text-2xl font-bold text-gray-900 mb-2">Who&apos;s Sharing the Bill?</h2>
         <p className="text-gray-600">Add at least 2 people to split the bill</p>
       </div>
 

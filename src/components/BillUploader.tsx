@@ -2,7 +2,7 @@
 
 import React, { useState, useRef, useEffect } from 'react';
 import { useBillStore } from '@/store/billStore';
-import { ExtractedItem, OcrResponse } from '@/types';
+import { ExtractedItem, OcrResponse, OcrItem } from '@/types';
 // Make sure EditableItemsTable.tsx exists in the same folder, or update the path if it's elsewhere
 import EditableItemsTable from './EditableItemsTable';
 
@@ -105,7 +105,7 @@ export default function BillUploader({ onSuccess, onError }: BillUploaderProps) 
         setOcrResults(result.data);
         
         // Convert OcrItems to ExtractedItems for editing
-        const extractedItems: ExtractedItem[] = result.data.items.map((item: any) => ({
+        const extractedItems: ExtractedItem[] = result.data.items.map((item: OcrItem) => ({
           item_name: item.description,
           quantity: item.quantity,
           unit_price: item.unitPrice
@@ -127,7 +127,7 @@ export default function BillUploader({ onSuccess, onError }: BillUploaderProps) 
         setError(result.error || 'Failed to process image');
         onError?.(result.error || 'Failed to process image');
       }
-    } catch (err) {
+    } catch {
       const errorMessage = 'Network error occurred while processing image';
       setError(errorMessage);
       onError?.(errorMessage);
@@ -377,7 +377,7 @@ export default function BillUploader({ onSuccess, onError }: BillUploaderProps) 
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
                 <p className="text-sm text-green-800">
-                  <strong>Gemini Vision:</strong> Successfully processed using Google's Gemini Vision API.
+                  <strong>Gemini Vision:</strong> Successfully processed using Google&apos;s Gemini Vision API.
                 </p>
               </div>
             </div>
