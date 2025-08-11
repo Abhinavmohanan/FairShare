@@ -254,16 +254,16 @@ export default function SummaryView({ onReset }: SummaryViewProps) {
           <table className="w-full">
             <thead className="bg-gray-50">
               <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
                   Person
                 </th>
-                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-6 py-3 text-right text-xs font-medium text-gray-700 uppercase tracking-wider">
                   Subtotal
                 </th>
-                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-6 py-3 text-right text-xs font-medium text-gray-700 uppercase tracking-wider">
                   Tax/Tip Share
                 </th>
-                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-6 py-3 text-right text-xs font-medium text-gray-700 uppercase tracking-wider">
                   Final Total
                 </th>
               </tr>
@@ -284,7 +284,7 @@ export default function SummaryView({ onReset }: SummaryViewProps) {
                   <td className="px-6 py-4 whitespace-nowrap text-right text-sm text-gray-900">
                     {formatCurrency(summary.subtotal)}
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-right text-sm text-gray-600">
+                  <td className="px-6 py-4 whitespace-nowrap text-right text-sm text-gray-800">
                     {formatCurrency(summary.taxShare)}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-right font-bold text-lg text-green-600">
@@ -331,8 +331,8 @@ export default function SummaryView({ onReset }: SummaryViewProps) {
                   <span className="font-medium text-gray-900">{formatCurrency(summary.subtotal)}</span>
                 </div>
                 <div className="flex justify-between items-center">
-                  <span className="text-gray-600">Tax/Tip Share:</span>
-                  <span className="font-medium text-gray-600">{formatCurrency(summary.taxShare)}</span>
+                  <span className="text-gray-700">Tax/Tip Share:</span>
+                  <span className="font-medium text-gray-800">{formatCurrency(summary.taxShare)}</span>
                 </div>
                 <div className="flex justify-between items-center pt-2 border-t border-gray-200">
                   <span className="text-lg font-bold text-gray-900">Total:</span>
@@ -414,8 +414,8 @@ export default function SummaryView({ onReset }: SummaryViewProps) {
         <div className="grid gap-2 text-sm">
           {items.map((item, index) => (
             <div key={index} className="flex justify-between">
-              <span>{item.item_name} ({item.quantity} × ₹{item.unit_price.toFixed(2)})</span>
-              <span className="font-medium">₹{(item.quantity * item.unit_price).toFixed(2)}</span>
+              <span className="text-gray-800">{item.item_name} ({item.quantity} × ₹{item.unit_price.toFixed(2)})</span>
+              <span className="font-medium text-gray-900">₹{(item.quantity * item.unit_price).toFixed(2)}</span>
             </div>
           ))}
         </div>
