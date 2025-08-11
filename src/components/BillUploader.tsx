@@ -294,8 +294,7 @@ export default function BillUploader({ onSuccess, onError }: BillUploaderProps) 
           ref={fileInputRef}
           type="file"
           className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-          accept="image/jpeg,image/jpg,image/png,image/*"
-          capture="environment"
+          accept="image/*"
           onChange={handleFileSelect}
           multiple={false}
         />
