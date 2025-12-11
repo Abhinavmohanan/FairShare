@@ -82,14 +82,16 @@ IMPORTANT RULES:
 
       // Retry logic with exponential backoff for rate limiting
       const maxRetries = 3;
+      const baseDelay = 1000; // 1 second
+      const maxDelay = 10000; // 10 seconds
       let lastError: Error | null = null;
       let response: Response | null = null;
 
       for (let attempt = 0; attempt < maxRetries; attempt++) {
         try {
-          // Add delay before retry (exponential backoff)
-          if (attempt > 0) {
-            const delay = Math.min(1000 * Math.pow(2, attempt - 1), 10000); // Max 10s delay
+          // Add delay before retry (exponential backoff), but skip for 429 errors as they're handled separately
+          if (attempt > 0 && lastError && !lastError.message.includes('Rate limit exceeded')) {
+            const delay = Math.min(baseDelay * Math.pow(2, attempt - 1), maxDelay);
             console.log(`Retry attempt ${attempt + 1}/${maxRetries} after ${delay}ms delay...`);
             await new Promise(resolve => setTimeout(resolve, delay));
           }
@@ -102,7 +104,7 @@ IMPORTANT RULES:
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
-              'x-goog-api-key': apiKey,
+              'X-Goog-Api-Key': apiKey,
             },
             body: JSON.stringify({
               contents: [{
@@ -130,10 +132,10 @@ IMPORTANT RULES:
 
           clearTimeout(timeoutId);
 
-          // If we get a 429 (rate limit), retry
+          // If we get a 429 (rate limit), retry with the API's suggested wait time
           if (response.status === 429) {
             const retryAfter = response.headers.get('Retry-After');
-            const waitTime = retryAfter ? parseInt(retryAfter) * 1000 : 2000;
+            const waitTime = retryAfter ? parseInt(retryAfter, 10) * 1000 : 2000;
             console.log(`Rate limited (429). Waiting ${waitTime}ms before retry...`);
             lastError = new Error(`Rate limit exceeded (attempt ${attempt + 1}/${maxRetries})`);
             
