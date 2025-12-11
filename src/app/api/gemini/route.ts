@@ -84,56 +84,65 @@ IMPORTANT RULES:
       const maxRetries = 3;
       const baseDelay = 1000; // 1 second
       const maxDelay = 10000; // 10 seconds
+      const requestTimeout = 30000; // 30 seconds
       let lastError: Error | null = null;
       let response: Response | null = null;
+      let isRateLimitError = false;
 
       for (let attempt = 0; attempt < maxRetries; attempt++) {
         try {
           // Add delay before retry (exponential backoff), but skip for 429 errors as they're handled separately
-          if (attempt > 0 && lastError && !lastError.message.includes('Rate limit exceeded')) {
+          if (attempt > 0 && !isRateLimitError) {
             const delay = Math.min(baseDelay * Math.pow(2, attempt - 1), maxDelay);
             console.log(`Retry attempt ${attempt + 1}/${maxRetries} after ${delay}ms delay...`);
             await new Promise(resolve => setTimeout(resolve, delay));
           }
+          
+          // Reset rate limit flag for this attempt
+          isRateLimitError = false;
 
           // Create AbortController for timeout
           const controller = new AbortController();
-          const timeoutId = setTimeout(() => controller.abort(), 30000); // 30 second timeout
+          const timeoutId = setTimeout(() => controller.abort(), requestTimeout);
 
-          response = await fetch('https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              'X-Goog-Api-Key': apiKey,
-            },
-            body: JSON.stringify({
-              contents: [{
-                parts: [
-                  {
-                    text: prompt
-                  },
-                  {
-                    inline_data: {
-                      mime_type: mimeType,
-                      data: base64Data
+          try {
+            response = await fetch('https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                'X-Goog-Api-Key': apiKey,
+              },
+              body: JSON.stringify({
+                contents: [{
+                  parts: [
+                    {
+                      text: prompt
+                    },
+                    {
+                      inline_data: {
+                        mime_type: mimeType,
+                        data: base64Data
+                      }
                     }
-                  }
-                ]
-              }],
-              generationConfig: {
-                temperature: 0.1,
-                topK: 1,
-                topP: 1,
-                maxOutputTokens: 4000,
-              }
-            }),
-            signal: controller.signal
-          });
-
-          clearTimeout(timeoutId);
+                  ]
+                }],
+                generationConfig: {
+                  temperature: 0.1,
+                  topK: 1,
+                  topP: 1,
+                  maxOutputTokens: 4000,
+                }
+              }),
+              signal: controller.signal
+            });
+          } finally {
+            // Always clear the timeout to prevent memory leaks
+            clearTimeout(timeoutId);
+          }
 
           // If we get a 429 (rate limit), retry with the API's suggested wait time
           if (response.status === 429) {
+            isRateLimitError = true;
             const retryAfter = response.headers.get('Retry-After');
             const waitTime = retryAfter ? parseInt(retryAfter, 10) * 1000 : 2000;
             console.log(`Rate limited (429). Waiting ${waitTime}ms before retry...`);
