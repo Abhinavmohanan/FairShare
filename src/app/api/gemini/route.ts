@@ -80,37 +80,109 @@ IMPORTANT RULES:
 - Return ONLY the JSON array, nothing else
 `;
 
-      const response = await fetch('https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'X-goog-api-key': apiKey,
-        },
-        body: JSON.stringify({
-          contents: [{
-            parts: [
-              {
-                text: prompt
-              },
-              {
-                inline_data: {
-                  mime_type: mimeType,
-                  data: base64Data
-                }
-              }
-            ]
-          }],
-          generationConfig: {
-            temperature: 0.1,
-            topK: 1,
-            topP: 1,
-            maxOutputTokens: 4000,
-          }
-        })
-      });
+      // Retry logic with exponential backoff for rate limiting
+      const maxRetries = 3;
+      const baseDelay = 1000; // 1 second
+      const maxDelay = 10000; // 10 seconds
+      let lastError: Error | null = null;
+      let response: Response | null = null;
 
-      if (!response.ok) {
-        throw new Error(`Gemini API request failed: ${response.status}`);
+      for (let attempt = 0; attempt < maxRetries; attempt++) {
+        try {
+          // Add delay before retry (exponential backoff), but skip for 429 errors as they're handled separately
+          if (attempt > 0 && lastError && !lastError.message.includes('Rate limit exceeded')) {
+            const delay = Math.min(baseDelay * Math.pow(2, attempt - 1), maxDelay);
+            console.log(`Retry attempt ${attempt + 1}/${maxRetries} after ${delay}ms delay...`);
+            await new Promise(resolve => setTimeout(resolve, delay));
+          }
+
+          // Create AbortController for timeout
+          const controller = new AbortController();
+          const timeoutId = setTimeout(() => controller.abort(), 30000); // 30 second timeout
+
+          response = await fetch('https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'X-Goog-Api-Key': apiKey,
+            },
+            body: JSON.stringify({
+              contents: [{
+                parts: [
+                  {
+                    text: prompt
+                  },
+                  {
+                    inline_data: {
+                      mime_type: mimeType,
+                      data: base64Data
+                    }
+                  }
+                ]
+              }],
+              generationConfig: {
+                temperature: 0.1,
+                topK: 1,
+                topP: 1,
+                maxOutputTokens: 4000,
+              }
+            }),
+            signal: controller.signal
+          });
+
+          clearTimeout(timeoutId);
+
+          // If we get a 429 (rate limit), retry with the API's suggested wait time
+          if (response.status === 429) {
+            const retryAfter = response.headers.get('Retry-After');
+            const waitTime = retryAfter ? parseInt(retryAfter, 10) * 1000 : 2000;
+            console.log(`Rate limited (429). Waiting ${waitTime}ms before retry...`);
+            lastError = new Error(`Rate limit exceeded (attempt ${attempt + 1}/${maxRetries})`);
+            
+            if (attempt < maxRetries - 1) {
+              await new Promise(resolve => setTimeout(resolve, waitTime));
+              continue;
+            }
+          }
+
+          // If successful, break out of retry loop
+          if (response.ok) {
+            break;
+          }
+
+          // For other errors, throw immediately
+          if (response.status !== 429) {
+            const errorBody = await response.text();
+            console.error('Gemini API error response:', errorBody);
+            throw new Error(`Gemini API request failed: ${response.status} - ${errorBody}`);
+          }
+        } catch (error) {
+          lastError = error as Error;
+          
+          // If it's an abort error (timeout), retry
+          if (error instanceof Error && error.name === 'AbortError') {
+            console.log(`Request timeout (attempt ${attempt + 1}/${maxRetries})`);
+            if (attempt === maxRetries - 1) {
+              throw new Error('Request timeout after multiple attempts. Please try again.');
+            }
+            continue;
+          }
+          
+          // For other errors during fetch, retry only if it's a network error
+          if (attempt < maxRetries - 1 && error instanceof TypeError) {
+            console.log(`Network error (attempt ${attempt + 1}/${maxRetries}):`, error.message);
+            continue;
+          }
+          
+          throw error;
+        }
+      }
+
+      if (!response || !response.ok) {
+        if (response?.status === 429) {
+          throw new Error('RATE_LIMIT_EXCEEDED: The API rate limit has been exceeded. Please wait a moment and try again.');
+        }
+        throw lastError || new Error('Failed to get response from Gemini API');
       }
 
       const result = await response.json();
