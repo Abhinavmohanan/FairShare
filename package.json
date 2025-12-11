@@ -12,7 +12,7 @@
     "@google-cloud/vision": "^5.3.3",
     "@google/generative-ai": "^0.24.1",
     "jspdf": "^3.0.1",
-    "next": "15.4.6",
+    "next": "15.4.8",
     "react": "19.1.0",
     "react-dom": "19.1.0",
     "zustand": "^5.0.7"
