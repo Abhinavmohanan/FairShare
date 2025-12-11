@@ -206,6 +206,7 @@ IMPORTANT RULES:
       }
 
       // Extract JSON from the response with improved regex
+      // First, try to find JSON array in the text
       let jsonMatch = generatedText.match(/\[[\s\S]*?\]/);
       
       if (!jsonMatch) {
@@ -228,22 +229,67 @@ IMPORTANT RULES:
       }
       
       if (!jsonMatch) {
-        throw new Error('No valid JSON found in Gemini response');
+        console.error('Failed to extract JSON from Gemini response. Response text:', generatedText);
+        throw new Error('No valid JSON array found in Gemini response. The AI may have returned text instead of JSON.');
       }
-
-      const items: ExtractedItem[] = JSON.parse(jsonMatch[0]);
       
-      // Validate and filter items
-      const validItems = items.filter((item: ExtractedItem) => 
-        item.item_name && 
-        typeof item.quantity === 'number' && 
-        typeof item.unit_price === 'number' &&
-        item.unit_price > 0 &&
-        item.quantity > 0
-      );
+      console.log('Extracted JSON string:', jsonMatch[0]);
+      
+      let items: ExtractedItem[];
+      try {
+        items = JSON.parse(jsonMatch[0]);
+      } catch (parseError) {
+        console.error('JSON parsing failed:', parseError);
+        console.error('JSON string that failed to parse:', jsonMatch[0]);
+        throw new Error(`Failed to parse JSON from Gemini response: ${parseError instanceof Error ? parseError.message : 'Unknown error'}`);
+      }
+      
+      // Ensure items is an array
+      if (!Array.isArray(items)) {
+        console.error('Parsed result is not an array:', items);
+        throw new Error('Gemini response did not contain a valid JSON array of items');
+      }
+      
+      console.log('Raw items from Gemini:', JSON.stringify(items, null, 2));
+      console.log(`Total items extracted before validation: ${items.length}`);
+      
+      // Validate and filter items with improved logging
+      const validItems = items.filter((item: ExtractedItem) => {
+        // Check for required fields
+        const hasName = item.item_name && typeof item.item_name === 'string' && item.item_name.trim().length > 0;
+        const hasQuantity = typeof item.quantity === 'number' && !isNaN(item.quantity) && item.quantity > 0;
+        const hasPrice = typeof item.unit_price === 'number' && !isNaN(item.unit_price) && item.unit_price >= 0; // Allow 0 for free items
+        
+        const isValid = hasName && hasQuantity && hasPrice;
+        
+        if (!isValid) {
+          console.warn('Invalid item filtered out:', {
+            item,
+            reasons: {
+              missingName: !hasName,
+              invalidQuantity: !hasQuantity,
+              invalidPrice: !hasPrice
+            }
+          });
+        }
+        
+        return isValid;
+      });
+
+      console.log(`Valid items after filtering: ${validItems.length}`);
 
       if (validItems.length === 0) {
-        throw new Error('No valid items extracted');
+        const errorMsg = items.length > 0 
+          ? `Extracted ${items.length} items but none passed validation. Check that items have valid name, quantity (> 0), and price (>= 0).`
+          : 'No items were extracted from the image. The bill may be unclear or empty.';
+        
+        console.error('Validation failed:', {
+          totalExtracted: items.length,
+          rawItems: items,
+          errorMsg
+        });
+        
+        throw new Error(errorMsg);
       }
 
       console.log('Successfully extracted items:', validItems);
